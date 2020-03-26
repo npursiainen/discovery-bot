@@ -101,7 +101,6 @@
   "author": "IBM",
   "license": "MIT",
   "pre-commit": [
-    "lint",
     "validate",
     "test"
   ],
