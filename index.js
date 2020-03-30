@@ -24,17 +24,10 @@ const discovery = new DiscoveryV1({
   url: process.env.DISCOVERY_URL
 });
 
-const date = new Date();
-date.setMonth(date.getMonth() + 1);
 const initContext = {
   skills: {
     'main skill': {
-      user_defined: {
-        acc_minamt: 50,
-        acc_currbal: 430,
-        acc_paydue: `${date.getFullYear()}-${date.getMonth() + 1}-26 12:00:00`,
-        accnames: [5624, 5893, 9225],
-      },
+      user_defined: {},
     },
   },
 };
@@ -110,29 +103,30 @@ app.post('/api/message', (req, res) => {
     payload.context = req.body.context || initContext;
   }
 
-  if (payload.input.text.match('discovery')) {
-    console.log('calling Discovery...');
-    getDiscoveryResults(textIn, function(err, data) {
-      if (err) {
-        console.log(err);
-        return res.status(err.code || 500).json(err);
-      } else {
-        console.log('Success');
-        return res.json(data);
-      }
-    });
-  } else {
-    // send payload to Conversation and return result
-    return assistant.message(payload, (err, data) => {
-      if (err) {
-        console.log(err);
-        return res.status(err.code || 500).json(err);
-      }
+  // send payload to Assistant and return result
+  return assistant.message(payload, (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.status(err.code || 500).json(err);
+    }
+    
+    // Call the Discovery API if requested by the Assistant
+    const context = data.result.context.skills['main skill'].user_defined;
+    if (context && context.action && context.action === 'discovery' && context.userInput) {
+      getDiscoveryResults(context.userInput, function(err, data) {
+        if (err) {
+          console.log(err);
+          return res.status(err.code || 500).json(err);
+        } else {
+          console.log('Success');
+          return res.json(data);
+        }
+      });
+    } else {
       console.log(JSON.stringify(data, null, 4));
       return res.json(data);
-    });
-  }
-
+    }
+  });
 });
 
 function getDiscoveryResults(query, callback) {

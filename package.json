@@ -101,8 +101,7 @@
   "author": "IBM",
   "license": "MIT",
   "pre-commit": [
-    "validate",
-    "test"
+    
   ],
   "bugs": {
     "url": "https://github.com/watson-developer-cloud/assistant-demo/issues"

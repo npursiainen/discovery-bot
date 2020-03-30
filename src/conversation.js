@@ -4,7 +4,17 @@ function getMessage(text, context, firstCallVal, callback) {
   const payload = {
     session_id: sessionId,
     input: { text },
-    context,
+    context: {
+      skills: {
+        'main skill': {
+          user_defined: {
+            // The action should always be cleared by the payload
+            // Otherwise, the bot will infinitely request to call Discovery
+            action: null
+          }
+        }
+      }
+    },
     isFirstCall: firstCallVal,
   };
   fetch('/api/message', {
